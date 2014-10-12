@@ -293,7 +293,7 @@ angular.module('template/smart-table/pagination.html', []).run(['$templateCache'
 (function (ng) {
   'use strict';
   ng.module('smart-table')
-    .directive('stSearchSelect', function ($interpolate) {
+    .directive('stSearchSelect', ['$interpolate', function ($interpolate) {
       return {
         replace: true,
         require: '^stTable',
@@ -343,7 +343,7 @@ angular.module('template/smart-table/pagination.html', []).run(['$templateCache'
           });
         }
       };
-    });
+    }]);
 
   function getOptionObjectsFromArray(options) {
     return options.map(function(val) {

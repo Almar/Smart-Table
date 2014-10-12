@@ -1,7 +1,7 @@
 (function (ng) {
   'use strict';
   ng.module('smart-table')
-    .directive('stSearchSelect', function ($interpolate) {
+    .directive('stSearchSelect', ['$interpolate', function ($interpolate) {
       return {
         replace: true,
         require: '^stTable',
@@ -51,7 +51,7 @@
           });
         }
       };
-    });
+    }]);
 
   function getOptionObjectsFromArray(options) {
     return options.map(function(val) {
