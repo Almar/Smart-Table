@@ -34,6 +34,11 @@
 
             // if not explicitly passed then determine the options by looking at the content of the table.
             scope.options = getOptionObjectsFromArray(ctrl.getUniqueValues(scope.predicate));
+
+            // when the table data is updated, also update the options
+            scope.$on('st-safeSrcChanged', function() {
+              scope.options = getOptionObjectsFromArray(ctrl.getUniqueValues(scope.predicate));
+            });
           }
 
           // if a label expression is passed than use this to create custom labels.
