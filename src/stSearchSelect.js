@@ -11,8 +11,8 @@ ng.module('smart-table')
 
             template: function(tElement, tAttrs) {
                 var emptyLabel = tAttrs.emptyLabel ? tAttrs.emptyLabel : '';
-                return template = '<select data-ng-model="selected" data-ng-options="option.value as option.label for option in options">' +
-                    '<option value="">' + emptyLabel + '</option></select>';
+                return '<select data-ng-model="selected" data-ng-options="option.value as option.label for option in options">' +
+                       '<option value="">' + emptyLabel + '</option></select>';
             },
             link: function (scope, element, attr, ctrl) {
                 var tableCtrl = ctrl;
