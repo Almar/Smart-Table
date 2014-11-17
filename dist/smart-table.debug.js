@@ -42,20 +42,16 @@ ng.module('smart-table')
 
         if ($attrs.stSafeSrc) {
             safeGetter = $parse($attrs.stSafeSrc);
-            $scope.$watch(function () {
+
+            $scope.$watchGroup([function() {
                 var safeSrc = safeGetter($scope);
                 return safeSrc ? safeSrc.length : 0;
-
-            }, function (newValue, oldValue) {
-                if (newValue !== safeCopy.length) {
-                    updateSafeCopy();
-                }
-            });
-            $scope.$watch(function () {
+            }, function() {
                 return safeGetter($scope);
-            }, function (newValue, oldValue) {
-                if (newValue !== oldValue) {
+            }], function(newValues, oldValues) {
+                if (oldValues[0] !== newValues[0] || oldValues[1] !== newValues[1]) {
                     updateSafeCopy();
+                    $scope.$broadcast('st-safeSrcChanged', null);
                 }
             });
         }
@@ -116,7 +112,7 @@ ng.module('smart-table')
             var prop = predicate || '$';
             filter.predicateObject[prop] = input;
             // to avoid to filter out null value
-            if (!input) {
+            if (input===undefined || input==='') {
                 delete filter.predicateObject[prop];
             }
             tableState.pagination.start = 0;
@@ -216,6 +212,27 @@ ng.module('smart-table')
         this.preventPipeOnWatch = function preventPipe() {
             pipeAfterSafeCopy = false;
         };
+
+        /**
+         * Convenient method to determine the unique values for a given predicate.
+         * This method is used in stSearchSelect to determine the options for the select element.
+         */
+        this.getUniqueValues = function(predicate) {
+            var seen;
+            var getter = $parse(predicate);
+            return safeCopy
+                .map(function(el) {
+                    return getter(el);
+                })
+                .sort()
+                .filter(function(el) {
+                    if (seen === undefined || seen !== el) {
+                        seen = el;
+                        return true;
+                    }
+                    return false;
+                });
+        };
     }])
     .directive('stTable', function () {
         return {
@@ -279,6 +296,71 @@ ng.module('smart-table')
             }
         };
     }]);
+
+ng.module('smart-table')
+    .directive('stSearchSelect', ['$interpolate', function ($interpolate) {
+        return {
+            replace: true,
+            require: '^stTable',
+            scope: {
+                predicate: '=?stSearchSelect',
+                attrOptions: '=?options',
+                selected: '=?value'
+            },
+
+            template: function(tElement, tAttrs) {
+                var emptyLabel = tAttrs.emptyLabel ? tAttrs.emptyLabel : '';
+                return template = '<select data-ng-model="selected" data-ng-options="option.value as option.label for option in options">' +
+                    '<option value="">' + emptyLabel + '</option></select>';
+            },
+            link: function (scope, element, attr, ctrl) {
+                var tableCtrl = ctrl;
+                var filter = ctrl.registerFilter('searchSelect', true);
+
+                if (scope.attrOptions) {
+                    if (scope.attrOptions.length>0 && (typeof scope.attrOptions[0] === 'object')) {
+
+                        // options as array of objects, eg: [{label:'green', value:true}, {label:'red', value:false}]
+                        scope.options = scope.attrOptions.slice(0); // copy values
+                    } else {
+
+                        // options as simple array, eg: ['apple', 'banana', 'cherry', 'strawberry', 'mango', 'pineapple'];
+                        scope.options = getOptionObjectsFromArray(scope.attrOptions);
+                    }
+                } else {
+
+                    // if not explicitly passed then determine the options by looking at the content of the table.
+                    scope.options = getOptionObjectsFromArray(ctrl.getUniqueValues(scope.predicate));
+
+                    // when the table data is updated, also update the options
+                    scope.$on('st-safeSrcChanged', function() {
+                        scope.options = getOptionObjectsFromArray(ctrl.getUniqueValues(scope.predicate));
+                    });
+                }
+
+                // if a label expression is passed than use this to create custom labels.
+                if (attr.label) {
+                    var strTemplate = attr.label.replace('[[', '{{').replace(']]', '}}');
+                    var template = $interpolate(strTemplate);
+                    scope.options.forEach(function(option) {
+                        option.label = template(option);
+                    });
+                }
+
+                element.on('change', function() {
+                    tableCtrl.applyFilter(scope.selected, scope.predicate, filter);
+                    scope.$parent.$digest();
+                });
+            }
+        };
+    }]);
+
+function getOptionObjectsFromArray(options) {
+    return options.map(function(val) {
+        return {label: val, value: val};
+    });
+}
+
 
 ng.module('smart-table')
     .directive('stSelectRow', function () {

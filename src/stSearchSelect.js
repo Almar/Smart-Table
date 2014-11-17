@@ -11,12 +11,12 @@ ng.module('smart-table')
 
             template: function(tElement, tAttrs) {
                 var emptyLabel = tAttrs.emptyLabel ? tAttrs.emptyLabel : '';
-                var template = '<select ng-model="selected" ng-options="option.value as option.label for option in options">' +
-                    '<option value="">' + emptyLabel + '</option></select>'
-                return template;
+                return template = '<select data-ng-model="selected" data-ng-options="option.value as option.label for option in options">' +
+                    '<option value="">' + emptyLabel + '</option></select>';
             },
             link: function (scope, element, attr, ctrl) {
                 var tableCtrl = ctrl;
+                var filter = ctrl.registerFilter('searchSelect', true);
 
                 if (scope.attrOptions) {
                     if (scope.attrOptions.length>0 && (typeof scope.attrOptions[0] === 'object')) {
@@ -49,7 +49,7 @@ ng.module('smart-table')
                 }
 
                 element.on('change', function() {
-                    tableCtrl.searchSelect(scope.selected, scope.predicate || '');
+                    tableCtrl.applyFilter(scope.selected, scope.predicate, filter);
                     scope.$parent.$digest();
                 });
             }

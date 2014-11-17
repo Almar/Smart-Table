@@ -29,21 +29,21 @@ ng.module('smart-table')
             }
         }
 
-            if ($attrs.stSafeSrc) {
-                safeGetter = $parse($attrs.stSafeSrc);
+        if ($attrs.stSafeSrc) {
+            safeGetter = $parse($attrs.stSafeSrc);
 
-                $scope.$watchGroup([function() {
-                  var safeSrc = safeGetter($scope);
-                  return safeSrc ? safeSrc.length : 0;
-                }, function() {
-                  return safeGetter($scope);
-                }], function(newValues, oldValues) {
-                  if (oldValues[0] !== newValues[0] || oldValues[1] !== newValues[1]) {
+            $scope.$watchGroup([function() {
+                var safeSrc = safeGetter($scope);
+                return safeSrc ? safeSrc.length : 0;
+            }, function() {
+                return safeGetter($scope);
+            }], function(newValues, oldValues) {
+                if (oldValues[0] !== newValues[0] || oldValues[1] !== newValues[1]) {
                     updateSafeCopy();
                     $scope.$broadcast('st-safeSrcChanged', null);
-                  }
-                });
-            }
+                }
+            });
+        }
 
         /**
          * sort the rows
@@ -101,7 +101,7 @@ ng.module('smart-table')
             var prop = predicate || '$';
             filter.predicateObject[prop] = input;
             // to avoid to filter out null value
-            if (!input) {
+            if (input===undefined || input==='') {
                 delete filter.predicateObject[prop];
             }
             tableState.pagination.start = 0;
@@ -202,28 +202,26 @@ ng.module('smart-table')
             pipeAfterSafeCopy = false;
         };
 
-            /**
-             * Convenient method to determine the unique values for a given predicate.
-             * This method is used in stSearchSelect to determine the options for the select element.
-             */
-            this.getUniqueValues = function(predicate) {
-              var seen;
-              var getter = $parse(predicate);
-              var ar = safeCopy
+        /**
+         * Convenient method to determine the unique values for a given predicate.
+         * This method is used in stSearchSelect to determine the options for the select element.
+         */
+        this.getUniqueValues = function(predicate) {
+            var seen;
+            var getter = $parse(predicate);
+            return safeCopy
                 .map(function(el) {
-                  return getter(el);
+                    return getter(el);
                 })
                 .sort()
                 .filter(function(el) {
-                  if (seen === undefined || seen !== el) {
-                    seen = el;
-                    return true;
-                  }
-                  return false;
+                    if (seen === undefined || seen !== el) {
+                        seen = el;
+                        return true;
+                    }
+                    return false;
                 });
-
-              return ar;
-            };
+        };
     }])
     .directive('stTable', function () {
         return {
