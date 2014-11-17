@@ -29,25 +29,21 @@ ng.module('smart-table')
             }
         }
 
-        if ($attrs.stSafeSrc) {
-            safeGetter = $parse($attrs.stSafeSrc);
-            $scope.$watch(function () {
-                var safeSrc = safeGetter($scope);
-                return safeSrc ? safeSrc.length : 0;
+            if ($attrs.stSafeSrc) {
+                safeGetter = $parse($attrs.stSafeSrc);
 
-            }, function (newValue, oldValue) {
-                if (newValue !== safeCopy.length) {
+                $scope.$watchGroup([function() {
+                  var safeSrc = safeGetter($scope);
+                  return safeSrc ? safeSrc.length : 0;
+                }, function() {
+                  return safeGetter($scope);
+                }], function(newValues, oldValues) {
+                  if (oldValues[0] !== newValues[0] || oldValues[1] !== newValues[1]) {
                     updateSafeCopy();
-                }
-            });
-            $scope.$watch(function () {
-                return safeGetter($scope);
-            }, function (newValue, oldValue) {
-                if (newValue !== oldValue) {
-                    updateSafeCopy();
-                }
-            });
-        }
+                    $scope.$broadcast('st-safeSrcChanged', null);
+                  }
+                });
+            }
 
         /**
          * sort the rows
@@ -160,6 +156,29 @@ ng.module('smart-table')
         this.preventPipeOnWatch = function preventPipe() {
             pipeAfterSafeCopy = false;
         };
+
+            /**
+             * Convenient method to determine the unique values for a given predicate.
+             * This method is used in stSearchSelect to determine the options for the select element.
+             */
+            this.getUniqueValues = function(predicate) {
+              var seen;
+              var getter = $parse(predicate);
+              var ar = safeCopy
+                .map(function(el) {
+                  return getter(el);
+                })
+                .sort()
+                .filter(function(el) {
+                  if (seen === undefined || seen !== el) {
+                    seen = el;
+                    return true;
+                  }
+                  return false;
+                });
+
+              return ar;
+            };
     }])
     .directive('stTable', function () {
         return {
