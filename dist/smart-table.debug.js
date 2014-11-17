@@ -317,19 +317,22 @@ ng.module('smart-table')
             link: function (scope, element, attr, ctrl) {
                 var tableCtrl = ctrl;
                 var filter;
-                var FILTERNAAM = 'searchSelect';
+                var FILTER_NAME = 'searchSelect';
 
                 if (attr.hasOwnProperty('comparator')) {
 
-                    // hier een getter om de functie te krijgen?!
+                    // We have to use a getter to get the actual function?!
                     var comparator = scope.comparator();
 
-                    // custom filternaam voor comparator, standaard filternaam plus naam van comparator functie.
-                    var customFilternaam = FILTERNAAM + '_' + comparator.name;
+                    // Custom filter name for comparator, standard name plus name of comparator function.
+                    // This way we prevent making multiple filters for the same comparator.
+                    var customFilterName = FILTER_NAME + '_' + comparator.name;
 
-                    filter = ctrl.registerFilter(customFilternaam , comparator);
+                    filter = ctrl.registerFilter(customFilterName , comparator);
                 } else {
-                   filter = ctrl.registerFilter(FILTERNAAM, true);
+
+                   // default we use strict comparison
+                   filter = ctrl.registerFilter(FILTER_NAME, true);
                 }
 
                 if (scope.attrOptions) {
