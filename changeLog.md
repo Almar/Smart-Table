@@ -44,3 +44,30 @@ Note that if you want to search against a property name you have now to put in u
 ## version 1.3.0
 
 * new feature, items by page and displayed page can be bound
+
+## version 1.4.0
+
+* support external template for pagination
+* support angular v1.3.x
+
+## version 1.4.1
+
+* ability to skip natural ordering state (ie fix #192)
+
+## versiokn 1.4.2
+
+* fix #200, `this` in a custom pipe function does not refer to the table controller anymore, and the signature of a custom pipe function is
+```javascript
+function(tableState, tableController){
+
+}
+```
+
+## version 1.4.3
+
+* ability to set filter function <code>st-set-filter</code>
+* ability to set sort function <code>st-set-sort</code>
+
+## version 1.4.4
+
+* patch for sync problem

@@ -2,13 +2,20 @@ describe('stPagination directive', function () {
 
     var controllerMock = {
         tableState: function () {
-            return tableState;
+            return tableState
         },
+
         slice: function (start, number) {
             tableState.pagination.start = start;
             tableState.pagination.number = number;
         }
     };
+
+    function ControllerMock() {
+        this.tableState = controllerMock.tableState;
+        this.slice = controllerMock.slice;
+    }
+
     var tableState = {
         sort: {},
         search: {},
@@ -31,12 +38,10 @@ describe('stPagination directive', function () {
     var element;
 
     beforeEach(module('smart-table', function ($controllerProvider) {
-        $controllerProvider.register('stTableController', function () {
-            return controllerMock;
-        });
+        $controllerProvider.register('stTableController', ControllerMock);
     }));
 
-    beforeEach(inject(function ($compile, $rootScope) {
+    beforeEach(inject(function ($compile, $rootScope, $templateCache) {
         rootScope = $rootScope;
         compile = $compile;
 
@@ -66,6 +71,23 @@ describe('stPagination directive', function () {
             rootScope.$apply();
             element = angular.element(document.getElementById('pagination'));
             expect(controllerMock.slice).toHaveBeenCalledWith(0, 10);
+        });
+    });
+
+    describe('template', function () {
+        var templateCache;
+        beforeEach(inject(function ($templateCache) {
+            templateCache = $templateCache;
+        }));
+
+        it('should load custom template from attribute "st-template"', function() {
+            templateCache.put('custom_template.html', '<div id="custom_id"></div>');
+
+            var template = '<table st-table="rowCollection"><tfoot><tr><td id="pagination" st-pagination="" st-template="custom_template.html"></td></tr></tfoot></table>';
+            element = compile(template)(rootScope);
+            rootScope.$apply();
+
+            expect(angular.element(element.find('div#custom_id')).length).toBe(1);
         });
     });
 
