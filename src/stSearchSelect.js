@@ -6,7 +6,8 @@ ng.module('smart-table')
             scope: {
                 predicate: '=?stSearchSelect',
                 attrOptions: '=?options',
-                selected: '=?value'
+                selected: '=?value',
+                comparator: '&'
             },
 
             template: function(tElement, tAttrs) {
@@ -16,7 +17,21 @@ ng.module('smart-table')
             },
             link: function (scope, element, attr, ctrl) {
                 var tableCtrl = ctrl;
-                var filter = ctrl.registerFilter('searchSelect', true);
+                var filter;
+                var FILTERNAAM = 'searchSelect';
+
+                if (attr.hasOwnProperty('comparator')) {
+
+                    // hier een getter om de functie te krijgen?!
+                    var comparator = scope.comparator();
+
+                    // custom filternaam voor comparator, standaard filternaam plus naam van comparator functie.
+                    var customFilternaam = FILTERNAAM + '_' + comparator.name;
+
+                    filter = ctrl.registerFilter(customFilternaam , comparator);
+                } else {
+                   filter = ctrl.registerFilter(FILTERNAAM, true);
+                }
 
                 if (scope.attrOptions) {
                     if (scope.attrOptions.length>0 && (typeof scope.attrOptions[0] === 'object')) {
