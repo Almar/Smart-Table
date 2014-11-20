@@ -29,11 +29,11 @@ ng.module('smart-table')
                     // This way we prevent making multiple filters for the same comparator.
                     var customFilterName = FILTER_NAME + '_' + comparator.name;
 
-                    filter = ctrl.registerFilter(customFilterName , comparator);
+                    filter = ctrl.registerFilter(customFilterName , comparator, null);
                 } else {
 
                    // default we use strict comparison
-                   filter = ctrl.registerFilter(FILTER_NAME, true);
+                   filter = ctrl.registerFilter(FILTER_NAME, true, null);
                 }
 
                 if (scope.attrOptions) {

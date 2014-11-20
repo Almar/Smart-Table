@@ -62,10 +62,11 @@ ng.module('smart-table')
          * @param {String} name - name of filter
          * @param {function(actual, expected)|true|undefined} comparator Comparator which is used in determining if the
          *     expected value (from the filter expression) and actual value (from the object in the array) should be
-         *     considered a match. See also https://docs.angularjs.org/api/ng/filter/filter
+         *     considered a match. See also https://docs.angularjs.org/api/ng/filter/filter.
+         * @param {String|undefined} emptyValue Value that represents a 'no filter' value.
          * @returns {Object} - filter object with predicateObject and comparator.
          */
-        this.registerFilter = function(name, comparator) {
+        this.registerFilter = function(name, comparator, emptyValue) {
             if (tableState.filters===undefined) {
                 tableState.filters = {};
             }
@@ -73,7 +74,8 @@ ng.module('smart-table')
             if (filter===undefined) {
                 filter = {
                     comparator: comparator,
-                    predicateObject: {}
+                    predicateObject: {},
+                    emptyValue: (emptyValue!==undefined ? emptyValue : '')
                 };
                 tableState.filters[name] = filter;
             }
@@ -101,7 +103,7 @@ ng.module('smart-table')
             var prop = predicate || '$';
             filter.predicateObject[prop] = input;
             // to avoid to filter out null value
-            if (input===undefined || input==null || input==='') {
+            if (input===filter.emptyValue) {
                 delete filter.predicateObject[prop];
             }
             tableState.pagination.start = 0;
@@ -117,7 +119,7 @@ ng.module('smart-table')
             var filtered = safeCopy;
             angular.forEach(tableState.filters, function(filterObj) {
                 var predicateObject = filterObj.predicateObject;
-                if (predicateObject) {
+                if (Object.keys(predicateObject).length > 0) {
                     filtered = filter(filtered, predicateObject, filterObj.comparator);
                 }
             });
