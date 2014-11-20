@@ -204,7 +204,7 @@ ng.module('smart-table')
 
         /**
          * Convenient method to determine the unique values for a given predicate.
-         * This method is used in stSearchSelect to determine the options for the select element.
+         * This method is used in stSelectFilter to determine the options for the select element.
          */
         this.getUniqueValues = function(predicate) {
             var seen;

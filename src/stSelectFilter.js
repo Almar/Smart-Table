@@ -1,10 +1,10 @@
 ng.module('smart-table')
-    .directive('stSearchSelect', ['$interpolate', function ($interpolate) {
+    .directive('stSelectFilter', ['$interpolate', function ($interpolate) {
         return {
             replace: true,
             require: '^stTable',
             scope: {
-                predicate: '=?stSearchSelect',
+                predicate: '=?stSelectFilter',
                 attrOptions: '=?options',
                 selected: '=?value',
                 comparator: '&'
@@ -18,7 +18,7 @@ ng.module('smart-table')
             link: function (scope, element, attr, ctrl) {
                 var tableCtrl = ctrl;
                 var filter;
-                var FILTER_NAME = 'searchSelect';
+                var FILTER_NAME = 'selectFilter';
 
                 if (attr.hasOwnProperty('comparator')) {
 

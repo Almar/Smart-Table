@@ -215,7 +215,7 @@ ng.module('smart-table')
 
         /**
          * Convenient method to determine the unique values for a given predicate.
-         * This method is used in stSearchSelect to determine the options for the select element.
+         * This method is used in stSelectFilter to determine the options for the select element.
          */
         this.getUniqueValues = function(predicate) {
             var seen;
@@ -298,12 +298,12 @@ ng.module('smart-table')
     }]);
 
 ng.module('smart-table')
-    .directive('stSearchSelect', ['$interpolate', function ($interpolate) {
+    .directive('stSelectFilter', ['$interpolate', function ($interpolate) {
         return {
             replace: true,
             require: '^stTable',
             scope: {
-                predicate: '=?stSearchSelect',
+                predicate: '=?stSelectFilter',
                 attrOptions: '=?options',
                 selected: '=?value',
                 comparator: '&'
@@ -317,7 +317,7 @@ ng.module('smart-table')
             link: function (scope, element, attr, ctrl) {
                 var tableCtrl = ctrl;
                 var filter;
-                var FILTER_NAME = 'searchSelect';
+                var FILTER_NAME = 'selectFilter';
 
                 if (attr.hasOwnProperty('comparator')) {
 
