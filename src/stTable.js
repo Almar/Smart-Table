@@ -18,32 +18,7 @@ ng.module('smart-table')
         var ctrl = this;
         var lastSelected;
 
-        function copyRefs(src) {
-            return [].concat(src);
-        }
 
-        function updateSafeCopy() {
-            safeCopy = copyRefs(safeGetter($scope));
-            if (pipeAfterSafeCopy === true) {
-                ctrl.pipe();
-            }
-        }
-
-        if ($attrs.stSafeSrc) {
-            safeGetter = $parse($attrs.stSafeSrc);
-
-            $scope.$watchGroup([function() {
-                var safeSrc = safeGetter($scope);
-                return safeSrc ? safeSrc.length : 0;
-            }, function() {
-                return safeGetter($scope);
-            }], function(newValues, oldValues) {
-                if (oldValues[0] !== newValues[0] || oldValues[1] !== newValues[1]) {
-                    updateSafeCopy();
-                    $scope.$broadcast('st-safeSrcChanged', null);
-                }
-            });
-        }
 
         /**
          * sort the rows
@@ -54,7 +29,7 @@ ng.module('smart-table')
             tableState.sort.predicate = predicate;
             tableState.sort.reverse = reverse === true;
             tableState.pagination.start = 0;
-            this.pipe();
+            return this.pipe();
         };
 
         /**
@@ -107,7 +82,7 @@ ng.module('smart-table')
                 delete filter.predicateObject[prop];
             }
             tableState.pagination.start = 0;
-            this.pipe();
+            return this.pipe();
         };
 
         /**
@@ -130,7 +105,7 @@ ng.module('smart-table')
             if (pagination.number !== undefined) {
                 pagination.numberOfPages = filtered.length > 0 ? Math.ceil(filtered.length / pagination.number) : 1;
                 pagination.start = pagination.start >= filtered.length ? (pagination.numberOfPages - 1) * pagination.number : pagination.start;
-                filtered = filtered.slice(pagination.start, pagination.start + pagination.number);
+                filtered = filtered.slice(pagination.start, pagination.start + parseInt(pagination.number));
             }
             displaySetter($scope, filtered);
         };
@@ -165,7 +140,7 @@ ng.module('smart-table')
         this.slice = function splice(start, number) {
             tableState.pagination.start = start;
             tableState.pagination.number = number;
-            this.pipe();
+            return this.pipe();
         };
 
         /**
@@ -224,6 +199,45 @@ ng.module('smart-table')
                     return false;
                 });
         };
+
+
+
+        // The constructor logic is moved down to appear under the definitions of the member functions. This to make
+        // sure the pipe function is defined before we attempt to call it.
+
+        function copyRefs(src) {
+            return src ? [].concat(src) : [];
+        }
+
+        function updateSafeCopy() {
+            safeCopy = copyRefs(safeGetter($scope));
+            if (pipeAfterSafeCopy === true) {
+                ctrl.pipe();
+            }
+        }
+
+        if ($attrs.stSafeSrc) {
+            safeGetter = $parse($attrs.stSafeSrc);
+
+            $scope.$watchGroup([function() {
+                var safeSrc = safeGetter($scope);
+                return safeSrc ? safeSrc.length : 0;
+            }, function() {
+                return safeGetter($scope);
+            }], function(newValues, oldValues) {
+                if (oldValues[0] !== newValues[0] || oldValues[1] !== newValues[1]) {
+                    updateSafeCopy();
+                    $scope.$broadcast('st-safeSrcChanged', null);
+                }
+            });
+
+            // make sure that stTable is defined on $scope. Either implicitly by calling updateSafeCopy or explicitly.
+            // by calling displaySetter.
+            updateSafeCopy();
+            if (pipeAfterSafeCopy !== true) {
+                displaySetter($scope, safeCopy);
+            }
+        }
     }])
     .directive('stTable', function () {
         return {
