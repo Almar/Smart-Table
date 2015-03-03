@@ -1,5 +1,5 @@
 /** 
-* @version 1.4.8
+* @version 1.4.11
 * @license MIT
 */
 (function (ng, undefined){
@@ -43,6 +43,13 @@ ng.module('smart-table')
         this.sortBy = function sortBy(predicate, reverse) {
             tableState.sort.predicate = predicate;
             tableState.sort.reverse = reverse === true;
+
+            if (ng.isFunction(predicate)) {
+              tableState.sort.functionName = predicate.name;
+            } else {
+              delete tableState.sort.functionName;
+            }
+
             tableState.pagination.start = 0;
             return this.pipe();
         };
@@ -499,7 +506,8 @@ ng.module('smart-table')
       require: '^stTable',
       scope: {
         stItemsByPage: '=?',
-        stDisplayedPages: '=?'
+        stDisplayedPages: '=?',
+        stPageChange: '&'
       },
       templateUrl: function (element, attrs) {
         if (attrs.stTemplate) {
@@ -520,6 +528,7 @@ ng.module('smart-table')
           var start = 1;
           var end;
           var i;
+          var prevPage = scope.currentPage;
           scope.currentPage = Math.floor(paginationState.start / paginationState.number) + 1;
 
           start = Math.max(start, scope.currentPage - Math.abs(Math.floor(scope.stDisplayedPages / 2)));
@@ -536,6 +545,10 @@ ng.module('smart-table')
           for (i = start; i < end; i++) {
             scope.pages.push(i);
           }
+
+          if (prevPage!==scope.currentPage) {
+            scope.stPageChange({newPage: scope.currentPage});
+          }
         }
 
         //table state --> view
@@ -544,8 +557,10 @@ ng.module('smart-table')
         }, redraw, true);
 
         //scope --> table state  (--> view)
-        scope.$watch('stItemsByPage', function () {
-          scope.selectPage(1);
+        scope.$watch('stItemsByPage', function (newValue, oldValue) {
+          if (newValue !== oldValue) {
+            scope.selectPage(1);
+          }
         });
 
         scope.$watch('stDisplayedPages', redraw);
@@ -557,31 +572,36 @@ ng.module('smart-table')
           }
         };
 
-        //select the first page
-        ctrl.slice(0, scope.stItemsByPage);
+        if(!ctrl.tableState().pagination.number){
+          ctrl.slice(0, scope.stItemsByPage);
+        }
       }
     };
   });
 
 ng.module('smart-table')
-    .directive('stPipe', function () {
-        return {
-            require: 'stTable',
-            scope: {
-                stPipe: '='
-            },
-            link: {
-                pre: function (scope, element, attrs, ctrl) {
+  .directive('stPipe', function () {
+    return {
+      require: 'stTable',
+      scope: {
+        stPipe: '='
+      },
+      link: {
 
-                    if (ng.isFunction(scope.stPipe)) {
-                        ctrl.preventPipeOnWatch();
-                        ctrl.pipe = function () {
-                            return scope.stPipe(ctrl.tableState(), ctrl);
-                        }
-                    }
-                }
+        pre: function (scope, element, attrs, ctrl) {
+          if (ng.isFunction(scope.stPipe)) {
+            ctrl.preventPipeOnWatch();
+            ctrl.pipe = function () {
+              return scope.stPipe(ctrl.tableState(), ctrl);
             }
-        };
-    });
+          }
+        },
+
+        post: function (scope, element, attrs, ctrl) {
+          ctrl.pipe();
+        }
+      }
+    };
+  });
 
 })(angular);

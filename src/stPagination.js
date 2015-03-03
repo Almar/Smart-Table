@@ -5,7 +5,8 @@ ng.module('smart-table')
       require: '^stTable',
       scope: {
         stItemsByPage: '=?',
-        stDisplayedPages: '=?'
+        stDisplayedPages: '=?',
+        stPageChange: '&'
       },
       templateUrl: function (element, attrs) {
         if (attrs.stTemplate) {
@@ -26,6 +27,7 @@ ng.module('smart-table')
           var start = 1;
           var end;
           var i;
+          var prevPage = scope.currentPage;
           scope.currentPage = Math.floor(paginationState.start / paginationState.number) + 1;
 
           start = Math.max(start, scope.currentPage - Math.abs(Math.floor(scope.stDisplayedPages / 2)));
@@ -42,6 +44,10 @@ ng.module('smart-table')
           for (i = start; i < end; i++) {
             scope.pages.push(i);
           }
+
+          if (prevPage!==scope.currentPage) {
+            scope.stPageChange({newPage: scope.currentPage});
+          }
         }
 
         //table state --> view
@@ -50,8 +56,10 @@ ng.module('smart-table')
         }, redraw, true);
 
         //scope --> table state  (--> view)
-        scope.$watch('stItemsByPage', function () {
-          scope.selectPage(1);
+        scope.$watch('stItemsByPage', function (newValue, oldValue) {
+          if (newValue !== oldValue) {
+            scope.selectPage(1);
+          }
         });
 
         scope.$watch('stDisplayedPages', redraw);
@@ -63,8 +71,9 @@ ng.module('smart-table')
           }
         };
 
-        //select the first page
-        ctrl.slice(0, scope.stItemsByPage);
+        if(!ctrl.tableState().pagination.number){
+          ctrl.slice(0, scope.stItemsByPage);
+        }
       }
     };
   });
