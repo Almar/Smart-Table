@@ -52,7 +52,7 @@ describe('stSort Directive', function () {
       }
     };
 
-    var template = '<table dummy="" st-table="rowCollection">' +
+    var template = '<table dummy="" st-table="rows" st-src="rowCollection">' +
       '<thead>' +
       '<tr><th st-sort="name">name</th>' +
       '<th st-sort="firstname">firstname</th>' +
@@ -61,7 +61,7 @@ describe('stSort Directive', function () {
       '</tr>' +
       '</thead>' +
       '<tbody>' +
-      '<tr class="test-row" ng-repeat="row in rowCollection">' +
+      '<tr class="test-row" ng-repeat="row in rows">' +
       '<td>{{row.name}}</td>' +
       '<td>{{row.firstname}}</td>' +
       '<td>{{row.age}}</td>' +
@@ -178,7 +178,7 @@ describe('stSort Directive', function () {
   });
 
   it('should sort by default a column', inject(function ($compile) {
-    var template = '<table dummy="" st-table="rowCollection">' +
+    var template = '<table dummy="" st-table="rows" st-src="rowCollection">' +
       '<thead>' +
       '<tr><th st-sort="name">name</th>' +
       '<th st-sort-default="true" st-sort="firstname">firstname</th>' +
@@ -186,7 +186,7 @@ describe('stSort Directive', function () {
       '</tr>' +
       '</thead>' +
       '<tbody>' +
-      '<tr class="test-row" ng-repeat="row in rowCollection">' +
+      '<tr class="test-row" ng-repeat="row in rows">' +
       '<td>{{row.name}}</td>' +
       '<td>{{row.firstname}}</td>' +
       '<td>{{row.age}}</td>' +
@@ -215,7 +215,7 @@ describe('stSort Directive', function () {
 
     scope.column = {reverse: false};
 
-    var template = '<table dummy="" st-table="rowCollection">' +
+    var template = '<table dummy="" st-table="rows" st-src="rowCollection">' +
       '<thead>' +
       '<tr><th st-sort="name">name</th>' +
       '<th st-sort-default="column.reverse" st-sort="firstname">firstname</th>' +
@@ -223,7 +223,7 @@ describe('stSort Directive', function () {
       '</tr>' +
       '</thead>' +
       '<tbody>' +
-      '<tr class="test-row" ng-repeat="row in rowCollection">' +
+      '<tr class="test-row" ng-repeat="row in rows">' +
       '<td>{{row.name}}</td>' +
       '<td>{{row.firstname}}</td>' +
       '<td>{{row.age}}</td>' +
@@ -250,7 +250,7 @@ describe('stSort Directive', function () {
   }));
 
   it('should sort by default a column in reverse mode', inject(function ($compile) {
-    var template = '<table dummy="" st-table="rowCollection">' +
+    var template = '<table dummy="" st-table="rows" st-src="rowCollection">' +
       '<thead>' +
       '<tr><th st-sort="name">name</th>' +
       '<th st-sort-default="reverse" st-sort="firstname">firstname</th>' +
@@ -258,7 +258,7 @@ describe('stSort Directive', function () {
       '</tr>' +
       '</thead>' +
       '<tbody>' +
-      '<tr class="test-row" ng-repeat="row in rowCollection">' +
+      '<tr class="test-row" ng-repeat="row in rows">' +
       '<td>{{row.name}}</td>' +
       '<td>{{row.firstname}}</td>' +
       '<td>{{row.age}}</td>' +
@@ -285,7 +285,7 @@ describe('stSort Directive', function () {
 
 
   it('should skip natural order', inject(function ($compile) {
-    var template = '<table dummy="" st-table="rowCollection">' +
+    var template = '<table dummy="" st-table="rows" st-src="rowCollection">' +
       '<thead>' +
       '<tr><th>name</th>' +
       '<th st-skip-natural="true" st-sort="firstname">firstname</th>' +
@@ -293,7 +293,7 @@ describe('stSort Directive', function () {
       '</tr>' +
       '</thead>' +
       '<tbody>' +
-      '<tr class="test-row" ng-repeat="row in rowCollection">' +
+      '<tr class="test-row" ng-repeat="row in rows">' +
       '<td>{{row.name}}</td>' +
       '<td>{{row.firstname}}</td>' +
       '<td>{{row.age}}</td>' +

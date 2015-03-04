@@ -1,12 +1,10 @@
 ng.module('smart-table')
-    .controller('stTableController', ['$scope', '$parse', '$filter', '$attrs', function StTableController($scope, $parse, $filter, $attrs) {
-        var propertyName = $attrs.stTable;
-        var displayGetter = $parse(propertyName);
-        var displaySetter = displayGetter.assign;
-        var safeGetter;
+    .controller('stTableController', ['$scope', '$parse', '$filter', '$attrs', '$log', function StTableController($scope, $parse, $filter, $attrs, $log) {
+        var scopeVarSetter = getScopeVarSetter();
+        var srcGetter = getSrcGetter();
         var orderBy = $filter('orderBy');
         var filter = $filter('filter');
-        var safeCopy = copyRefs(displayGetter($scope));
+        var safeCopy = srcGetter($scope);
         var tableState = {
             sort: {},
             filters: {},
@@ -18,6 +16,49 @@ ng.module('smart-table')
         var ctrl = this;
         var lastSelected;
 
+        // Initial value of scope var is a (shallow) copy of source data
+        scopeVarSetter($scope, [].concat(safeCopy));
+
+        // Watch source data. Update table when new array is set or array length changes.
+        $scope.$watchGroup([function() {
+          var data = srcGetter($scope);
+          return data ? data.length : 0;
+        }, function() {
+          return srcGetter($scope);
+        }], function(newValues, oldValues) {
+          if (oldValues[0] !== newValues[0] || oldValues[1] !== newValues[1]) {
+            updateSafeCopy();
+          }
+        });
+
+        function getScopeVarSetter() {
+          var defaultValue = 'tableData';
+          var attValue = $attrs.stTable;
+          if (attValue === '') {
+            $log.error('st-table has an empty value. No scope variable name is defined. Defaults to \'' + defaultValue + '\'');
+            attValue = defaultValue;
+          }
+          return $parse(attValue).assign;
+        }
+
+        function getSrcGetter() {
+          if (angular.isUndefined($attrs.stSrc) || $attrs.stSrc === '') {
+            $log.error('st-src is undefined! Table data needs to be assigned through attribute \'st-src\'');
+            return function() {
+              var data = [];
+              return data;
+            }
+          }
+          return $parse($attrs.stSrc);
+        }
+
+        function updateSafeCopy() {
+          safeCopy = srcGetter($scope);
+          if (pipeAfterSafeCopy === true) {
+            ctrl.pipe();
+          }
+          $scope.$broadcast('st-safeSrcChanged', null);
+        }
 
 
         /**
@@ -29,6 +70,7 @@ ng.module('smart-table')
             tableState.sort.predicate = predicate;
             tableState.sort.reverse = reverse === true;
 
+            // For change detection, see https://github.com/lorenzofox3/Smart-Table/issues/285
             if (ng.isFunction(predicate)) {
               tableState.sort.functionName = predicate.name;
             } else {
@@ -114,7 +156,7 @@ ng.module('smart-table')
                 pagination.start = pagination.start >= filtered.length ? (pagination.numberOfPages - 1) * pagination.number : pagination.start;
                 filtered = filtered.slice(pagination.start, pagination.start + parseInt(pagination.number));
             }
-            displaySetter($scope, filtered);
+            scopeVarSetter($scope, filtered);
         };
 
         /**
@@ -207,44 +249,6 @@ ng.module('smart-table')
                 });
         };
 
-
-
-        // The constructor logic is moved down to appear under the definitions of the member functions. This to make
-        // sure the pipe function is defined before we attempt to call it.
-
-        function copyRefs(src) {
-            return src ? [].concat(src) : [];
-        }
-
-        function updateSafeCopy() {
-            safeCopy = copyRefs(safeGetter($scope));
-            if (pipeAfterSafeCopy === true) {
-                ctrl.pipe();
-            }
-        }
-
-        if ($attrs.stSafeSrc) {
-            safeGetter = $parse($attrs.stSafeSrc);
-
-            $scope.$watchGroup([function() {
-                var safeSrc = safeGetter($scope);
-                return safeSrc ? safeSrc.length : 0;
-            }, function() {
-                return safeGetter($scope);
-            }], function(newValues, oldValues) {
-                if (oldValues[0] !== newValues[0] || oldValues[1] !== newValues[1]) {
-                    updateSafeCopy();
-                    $scope.$broadcast('st-safeSrcChanged', null);
-                }
-            });
-
-            // make sure that stTable is defined on $scope. Either implicitly by calling updateSafeCopy or explicitly.
-            // by calling displaySetter.
-            updateSafeCopy();
-            if (pipeAfterSafeCopy !== true) {
-                displaySetter($scope, safeCopy);
-            }
-        }
     }])
     .directive('stTable', function () {
         return {

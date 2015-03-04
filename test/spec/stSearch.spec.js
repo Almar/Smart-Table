@@ -30,7 +30,7 @@ describe('stSearch Directive', function () {
                 {name: 'Faivre', firstname: 'Blandine', age: 44}
             ];
 
-            var template = '<table st-table="rowCollection">' +
+            var template = '<table st-table="rows" st-src="rowCollection">' +
                 '<thead>' +
                 '<tr>' +
                 '<th><input st-search="\'name\'" /></th>' +
@@ -39,7 +39,7 @@ describe('stSearch Directive', function () {
                 '</tr>' +
                 '</thead>' +
                 '<tbody>' +
-                '<tr class="test-filtered" ng-repeat="row in rowCollection">' +
+                '<tr class="test-filtered" ng-repeat="row in rows">' +
                 '<td>{{row.name}}</td>' +
                 '<td>{{row.firstname}}</td>' +
                 '<td>{{row.age}}</td>' +
@@ -102,7 +102,7 @@ describe('stSearch Directive', function () {
                 {name: 'Faivre', firstname: 'Blandine', age: 44}
             ];
 
-            var template = '<table st-table="rowCollection">' +
+            var template = '<table st-table="rows" st-src="rowCollection">' +
                 '<thead>' +
                 '<tr>' +
                 '<th><input st-search="searchPredicate" /></th>' +
@@ -111,7 +111,7 @@ describe('stSearch Directive', function () {
                 '</tr>' +
                 '</thead>' +
                 '<tbody>' +
-                '<tr class="test-filtered" ng-repeat="row in rowCollection">' +
+                '<tr class="test-filtered" ng-repeat="row in rows">' +
                 '<td>{{row.name}}</td>' +
                 '<td>{{row.firstname}}</td>' +
                 '<td>{{row.age}}</td>' +

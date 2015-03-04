@@ -23,9 +23,9 @@ describe('stSelectRow Directive', function () {
                 {name: 'Faivre', firstname: 'Blandine', age: 44}
             ];
 
-            var template = '<table st-table="rowCollection">' +
+            var template = '<table st-table="rows" st-src="rowCollection">' +
                 '<tbody>' +
-                '<tr st-select-row="row" ng-repeat="row in rowCollection"></tr>' +
+                '<tr st-select-row="row" ng-repeat="row in rows"></tr>' +
                 '</tbody>' +
                 '</table>';
 
@@ -78,9 +78,9 @@ describe('stSelectRow Directive', function () {
                 {name: 'Faivre', firstname: 'Blandine', age: 44}
             ];
 
-            var template = '<table st-table="rowCollection">' +
+            var template = '<table st-table="rows" st-src="rowCollection">' +
                 '<tbody>' +
-                '<tr st-select-mode="multiple" st-select-row="row" ng-repeat="row in rowCollection"></tr>' +
+                '<tr st-select-mode="multiple" st-select-row="row" ng-repeat="row in rows"></tr>' +
                 '</tbody>' +
                 '</table>';
 

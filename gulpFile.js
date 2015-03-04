@@ -43,9 +43,7 @@ gulp.task('karma-CI', function (done) {
 
 gulp.task('concat', function () {
     gulp.src(src, { base: '.' })
-        .pipe(sourcemaps.init())
         .pipe(concat('smart-table.js'))
-        .pipe(sourcemaps.write())
         .pipe(gulp.dest(disFolder));
 });
 
