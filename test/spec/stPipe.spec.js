@@ -21,7 +21,7 @@ describe('stPipe directive', function () {
 
     it('should use the custom pipe function with the current table state as argument', inject(function ($compile) {
         var element;
-        var template = '<table st-pipe="customPipe" st-table="rowCollection">' +
+        var template = '<table st-table="members" st-pipe="customPipe" st-src="rowCollection">' +
             '<thead>' +
             '<tr><th st-sort="name">firstname</th>' +
             '<th st-sort="lastname">lastname</th>' +
