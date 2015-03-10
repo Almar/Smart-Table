@@ -60,8 +60,7 @@ ng.module('smart-table')
           if (angular.isUndefined($attrs.stSrc) || $attrs.stSrc === '') {
             $log.error('st-src is undefined! Table data needs to be assigned through attribute \'st-src\'');
             return function() {
-              var data = [];
-              return data;
+              return [];
             }
           }
           return $parse($attrs.stSrc);
@@ -329,7 +328,7 @@ ng.module('smart-table')
     }]);
 
 ng.module('smart-table')
-    .directive('stSelectFilter', ['$interpolate', function ($interpolate) {
+    .directive('stSelectFilter', ['$interpolate', '$log', function ($interpolate, $log) {
         return {
             replace: true,
             require: '^stTable',
@@ -377,6 +376,12 @@ ng.module('smart-table')
                         scope.options = getOptionObjectsFromArray(scope.attrOptions);
                     }
                 } else {
+                    if (angular.isUndefined(scope.predicate) || scope.predicate === '') {
+                        $log.error('Empty predicate value not allowed for st-select-filter');
+                    }
+                    if (scope.predicate === '$') {
+                        $log.error('Predicate value \'$\' only allowed for st-select-filter when combined with attribute \'options\'');
+                    }
 
                     // if not explicitly passed then determine the options by looking at the content of the table.
                     scope.options = getOptionObjectsFromArray(ctrl.getUniqueValues(scope.predicate));
@@ -397,6 +402,10 @@ ng.module('smart-table')
                 }
 
                 element.on('change', function() {
+                    if (angular.isUndefined(scope.predicate) || scope.predicate === '') {
+                      $log.error('Empty predicate not allowed, assign a predicate value to st-select-filter. Use \'$\' to filter globally.');
+                      return;
+                    }
                     tableCtrl.applyFilter(scope.selected, scope.predicate, filter);
                     scope.$parent.$digest();
                 });

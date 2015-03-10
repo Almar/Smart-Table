@@ -45,8 +45,7 @@ ng.module('smart-table')
           if (angular.isUndefined($attrs.stSrc) || $attrs.stSrc === '') {
             $log.error('st-src is undefined! Table data needs to be assigned through attribute \'st-src\'');
             return function() {
-              var data = [];
-              return data;
+              return [];
             }
           }
           return $parse($attrs.stSrc);
