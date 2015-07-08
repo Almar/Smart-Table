@@ -41,10 +41,20 @@ ng.module('smart-table')
 
                         // options as array of objects, eg: [{label:'green', value:true}, {label:'red', value:false}]
                         scope.options = scope.attrOptions.slice(0); // copy values
+
+                        // when the table data is updated, also update the options
+                        scope.$on('st-safeSrcChanged', function() {
+                            scope.options = scope.attrOptions.slice(0); // copy values
+                        });
                     } else {
 
                         // options as simple array, eg: ['apple', 'banana', 'cherry', 'strawberry', 'mango', 'pineapple'];
                         scope.options = getOptionObjectsFromArray(scope.attrOptions);
+
+                        // when the table data is updated, also update the options
+                        scope.$on('st-safeSrcChanged', function() {
+                            scope.options = getOptionObjectsFromArray(scope.attrOptions);
+                        });
                     }
                 } else {
                     if (angular.isUndefined(scope.predicate) || scope.predicate === '') {
