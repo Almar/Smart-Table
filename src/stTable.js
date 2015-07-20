@@ -1,10 +1,8 @@
 ng.module('smart-table')
     .controller('stTableController', ['$scope', '$parse', '$filter', '$attrs', '$log', function StTableController($scope, $parse, $filter, $attrs, $log) {
         var scopeVarSetter = getScopeVarSetter();
-        var srcGetter = getSrcGetter();
         var orderBy = $filter('orderBy');
         var filter = $filter('filter');
-        var safeCopy = srcGetter($scope);
         var tableState = {
             sort: {},
             filters: {},
@@ -15,21 +13,37 @@ ng.module('smart-table')
         var pipeAfterSafeCopy = true;
         var ctrl = this;
         var lastSelected;
+        var srcGetter;
+        var safeCopy;
 
-        // Initial value of scope var is a (shallow) copy of source data
-        scopeVarSetter($scope, [].concat(safeCopy));
+        // Print error if st-src is not used and we can't find an attribute ending with '-pipe'.
+        if (angular.isUndefined($attrs.stSrc) || $attrs.stSrc === '') {
+            if (!Object.getOwnPropertyNames($attrs).some(function(attr) {
+                return attr.indexOf('Pipe', attr.length - 4) !== -1;
+            })) {
+                $log.error('st-src is undefined! Table data needs to be assigned through attribute \'st-src\' (unless you\'re use a custom pipe).');
+            }
+        }
 
-        // Watch source data. Update table when new array is set or array length changes.
-        $scope.$watchGroup([function() {
-          var data = srcGetter($scope);
-          return data ? data.length : 0;
-        }, function() {
-          return srcGetter($scope);
-        }], function(newValues, oldValues) {
-          if (oldValues[0] !== newValues[0] || oldValues[1] !== newValues[1]) {
-            updateSafeCopy();
-          }
-        });
+        if (angular.isDefined($attrs.stSrc)) {
+            srcGetter = getSrcGetter();
+            safeCopy = srcGetter($scope);
+
+            // Initial value of scope var is a (shallow) copy of source data
+            scopeVarSetter($scope, [].concat(safeCopy));
+
+            // Watch source data. Update table when new array is set or array length changes.
+            $scope.$watchGroup([function() {
+                var data = srcGetter($scope);
+                return data ? data.length : 0;
+            }, function() {
+                return srcGetter($scope);
+            }], function(newValues, oldValues) {
+                if (oldValues[0] !== newValues[0] || oldValues[1] !== newValues[1]) {
+                    updateSafeCopy();
+                }
+            });
+        }
 
         function getScopeVarSetter() {
           var defaultValue = 'tableData';
@@ -43,9 +57,8 @@ ng.module('smart-table')
 
         function getSrcGetter() {
           if (angular.isUndefined($attrs.stSrc) || $attrs.stSrc === '') {
-            $log.error('st-src is undefined! Table data needs to be assigned through attribute \'st-src\'');
             return function() {
-              return [];
+                $log.error('Attribute \'st-src\' is undefined!');
             }
           }
           return $parse($attrs.stSrc);
@@ -91,7 +104,7 @@ ng.module('smart-table')
          */
         this.registerFilter = function(name, comparator, emptyValue) {
             if (tableState.filters===undefined) {
-                tableState.filters = {};
+                tableState.filters = Object.create(null);
             }
             var filter = tableState.filters[name];
             if (filter===undefined) {
