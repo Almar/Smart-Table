@@ -20,9 +20,7 @@ ng.module('smart-table')
                 var filter;
                 var FILTER_NAME = 'selectFilter';
 
-                if (attr.hasOwnProperty('comparator')) {
-
-                    // We have to use a getter to get the actual function?!
+                if (attr.comparator) {
                     var comparator = scope.comparator();
 
                     // Custom filter name for comparator, standard name plus name of comparator function.
