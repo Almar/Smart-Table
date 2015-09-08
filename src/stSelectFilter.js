@@ -78,6 +78,17 @@ ng.module('smart-table')
                     tableCtrl.applyFilter(scope.selected, scope.predicate, filter);
                     scope.$parent.$digest();
                 });
+
+                //table state -> view
+                scope.$watch(function () {
+                    return filter.predicateObject;
+                }, function (newValue) {
+                    var predicateObject = newValue;
+                    var predicateExpression = scope.predicate || '$';
+                    if (predicateObject && predicateObject[predicateExpression] !== element[0].value) {
+                        scope.selected = predicateObject[predicateExpression] || '';
+                    }
+                }, true);
             }
         };
     }]);
