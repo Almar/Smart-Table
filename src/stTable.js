@@ -66,12 +66,12 @@ ng.module('smart-table')
 
         function updateSafeCopy() {
           safeCopy = srcGetter($scope);
+          tableState.pagination.start = 0;
           if (pipeAfterSafeCopy === true) {
             ctrl.pipe();
           }
           $scope.$broadcast('st-safeSrcChanged', null);
         }
-
 
         /**
          * sort the rows
@@ -151,22 +151,26 @@ ng.module('smart-table')
          */
         this.pipe = function pipe() {
             var pagination = tableState.pagination;
-
             var filtered = safeCopy;
-            angular.forEach(tableState.filters, function(filterObj) {
-                var predicateObject = filterObj.predicateObject;
-                if (Object.keys(predicateObject).length > 0) {
-                    filtered = filter(filtered, predicateObject, filterObj.comparator);
-                }
-            });
 
-            if (tableState.sort.predicate) {
-                filtered = orderBy(filtered, tableState.sort.predicate, tableState.sort.reverse);
-            }
-            if (pagination.number !== undefined) {
-                pagination.numberOfPages = filtered.length > 0 ? Math.ceil(filtered.length / pagination.number) : 1;
-                pagination.start = pagination.start >= filtered.length ? (pagination.numberOfPages - 1) * pagination.number : pagination.start;
-                filtered = filtered.slice(pagination.start, pagination.start + parseInt(pagination.number));
+            if (!safeCopy) {
+                filtered = [];
+            } else {
+                angular.forEach(tableState.filters, function(filterObj) {
+                    var predicateObject = filterObj.predicateObject;
+                    if (Object.keys(predicateObject).length > 0) {
+                        filtered = filter(filtered, predicateObject, filterObj.comparator);
+                    }
+                });
+
+                if (tableState.sort.predicate) {
+                    filtered = orderBy(filtered, tableState.sort.predicate, tableState.sort.reverse);
+                }
+                if (pagination.number !== undefined) {
+                    pagination.numberOfPages = filtered.length > 0 ? Math.ceil(filtered.length / pagination.number) : 1;
+                    pagination.start = pagination.start >= filtered.length ? (pagination.numberOfPages - 1) * pagination.number : pagination.start;
+                    filtered = filtered.slice(pagination.start, pagination.start + parseInt(pagination.number));
+                }
             }
             scopeVarSetter($scope, filtered);
         };
@@ -247,6 +251,7 @@ ng.module('smart-table')
         this.getUniqueValues = function(predicate) {
             var seen;
             var getter = $parse(predicate);
+            if (!safeCopy) return [];
             return safeCopy
                 .map(function(el) {
                     return getter(el);

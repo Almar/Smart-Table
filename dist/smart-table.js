@@ -81,12 +81,12 @@ ng.module('smart-table')
 
         function updateSafeCopy() {
           safeCopy = srcGetter($scope);
+          tableState.pagination.start = 0;
           if (pipeAfterSafeCopy === true) {
             ctrl.pipe();
           }
           $scope.$broadcast('st-safeSrcChanged', null);
         }
-
 
         /**
          * sort the rows
@@ -166,8 +166,10 @@ ng.module('smart-table')
          */
         this.pipe = function pipe() {
             var pagination = tableState.pagination;
-
             var filtered = safeCopy;
+
+            if (!safeCopy) return [];
+
             angular.forEach(tableState.filters, function(filterObj) {
                 var predicateObject = filterObj.predicateObject;
                 if (Object.keys(predicateObject).length > 0) {
@@ -262,6 +264,7 @@ ng.module('smart-table')
         this.getUniqueValues = function(predicate) {
             var seen;
             var getter = $parse(predicate);
+            if (!safeCopy) return [];
             return safeCopy
                 .map(function(el) {
                     return getter(el);
