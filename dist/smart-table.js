@@ -168,22 +168,24 @@ ng.module('smart-table')
             var pagination = tableState.pagination;
             var filtered = safeCopy;
 
-            if (!safeCopy) return [];
+            if (!safeCopy) {
+                filtered = [];
+            } else {
+                angular.forEach(tableState.filters, function(filterObj) {
+                    var predicateObject = filterObj.predicateObject;
+                    if (Object.keys(predicateObject).length > 0) {
+                        filtered = filter(filtered, predicateObject, filterObj.comparator);
+                    }
+                });
 
-            angular.forEach(tableState.filters, function(filterObj) {
-                var predicateObject = filterObj.predicateObject;
-                if (Object.keys(predicateObject).length > 0) {
-                    filtered = filter(filtered, predicateObject, filterObj.comparator);
+                if (tableState.sort.predicate) {
+                    filtered = orderBy(filtered, tableState.sort.predicate, tableState.sort.reverse);
                 }
-            });
-
-            if (tableState.sort.predicate) {
-                filtered = orderBy(filtered, tableState.sort.predicate, tableState.sort.reverse);
-            }
-            if (pagination.number !== undefined) {
-                pagination.numberOfPages = filtered.length > 0 ? Math.ceil(filtered.length / pagination.number) : 1;
-                pagination.start = pagination.start >= filtered.length ? (pagination.numberOfPages - 1) * pagination.number : pagination.start;
-                filtered = filtered.slice(pagination.start, pagination.start + parseInt(pagination.number));
+                if (pagination.number !== undefined) {
+                    pagination.numberOfPages = filtered.length > 0 ? Math.ceil(filtered.length / pagination.number) : 1;
+                    pagination.start = pagination.start >= filtered.length ? (pagination.numberOfPages - 1) * pagination.number : pagination.start;
+                    filtered = filtered.slice(pagination.start, pagination.start + parseInt(pagination.number));
+                }
             }
             scopeVarSetter($scope, filtered);
         };
@@ -359,7 +361,7 @@ ng.module('smart-table')
             scope: {
                 predicate: '=?stSelectFilter',
                 attrOptions: '=?options',
-                selected: '=?value',
+                attSelected: '=?selected',
                 comparator: '&'
             },
 
@@ -411,6 +413,14 @@ ng.module('smart-table')
                     // when the table data is updated, also update the options
                     scope.$on('st-safeSrcChanged', function() {
                         scope.options = getOptionObjectsFromArray(ctrl.getUniqueValues(scope.predicate));
+
+                        // if currently selected filter value is no longer an option in the list, reset filter.
+                        if (scope.selected !== null && !scope.options.some(function(option) {
+                                return option.value === scope.selected;
+                            })) {
+                            scope.selected = null;
+                            tableCtrl.applyFilter(scope.selected, scope.predicate, filter);
+                        }
                     });
                 }
 
@@ -435,13 +445,41 @@ ng.module('smart-table')
                 //table state -> view
                 scope.$watch(function () {
                     return filter.predicateObject;
-                }, function (newValue) {
-                    var predicateObject = newValue;
-                    var predicateExpression = scope.predicate || '$';
-                    if (predicateObject && predicateObject[predicateExpression] !== element[0].value) {
-                        scope.selected = predicateObject[predicateExpression] || '';
+                }, function (newValue, oldValue) {
+                    if (newValue !== oldValue) {
+                        var predicateObject = newValue;
+                        var predicateExpression = scope.predicate || '$';
+                        if (predicateObject && predicateObject[predicateExpression] !== element[0].value) {
+                            scope.attSelected = predicateObject[predicateExpression] || '';
+                        }
                     }
                 }, true);
+
+                // view --> table state
+                scope.$watch(function () {
+                    return scope.attSelected;
+                }, function (newValue, oldValue) {
+                    if (newValue === oldValue) {
+
+                        // if new and old value are the same than this is the initial call. If a value is set than this a default or pre selected.
+                        // here where not going to use applyFilter because we're still in the initialization phase.
+                        if (newValue && newValue !== '') {
+                            var predicateExpression = scope.predicate || '$';
+                            filter.predicateObject[predicateExpression] = newValue;
+                            scope.selected = newValue;
+                        }
+                    } else {
+                        var validOption = scope.options.some(function(option) {
+                            return option.value === newValue;
+                        });
+
+                        scope.attSelected = validOption ? newValue : null;
+                        if (scope.selected !== scope.attSelected) {
+                            scope.selected = scope.attSelected;
+                            tableCtrl.applyFilter(scope.selected, scope.predicate, filter);
+                        }
+                    }
+                });
             }
         };
     }]);
