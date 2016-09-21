@@ -252,11 +252,19 @@ ng.module('smart-table')
             var seen;
             var getter = $parse(predicate);
             if (!safeCopy) return [];
+
             return safeCopy
                 .map(function(el) {
                     return getter(el);
                 })
-                .sort()
+                .sort(function(o1, o2) {
+                  if (typeof o1 === 'string') {
+                    return o1.localeCompare(o2);
+                  } else {
+                    return (o1 > o2) ? 1 :
+                        (o1 < o2) ? -1 : 0;
+                  }
+                })
                 .filter(function(el) {
                     if (seen === undefined || seen !== el) {
                         seen = el;
