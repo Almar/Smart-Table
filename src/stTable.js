@@ -16,15 +16,6 @@ ng.module('smart-table')
         var srcGetter;
         var safeCopy;
 
-        // Print error if st-src is not used and we can't find an attribute ending with '-pipe'.
-        if (angular.isUndefined($attrs.stSrc) || $attrs.stSrc === '') {
-            if (!Object.getOwnPropertyNames($attrs).some(function(attr) {
-                return attr.indexOf('Pipe', attr.length - 4) !== -1;
-            })) {
-                $log.error('st-src is undefined! Table data needs to be assigned through attribute \'st-src\' (unless you\'re use a custom pipe).');
-            }
-        }
-
         if (angular.isDefined($attrs.stSrc)) {
             srcGetter = getSrcGetter();
             safeCopy = srcGetter($scope);
